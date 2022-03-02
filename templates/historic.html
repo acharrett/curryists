@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+
+{% if request.user.is_authenticated %}
+
+{% include 'event_header.html' %}
+
+{% if attend_list %}
+<table border="1">
+
+<tr class="header">
+<td><b>Name</b></td>
+<td><b>Email</b></td>
+<td><b>Number Attending</b></td>
+</tr>
+
+{% for attend in attend_list %}
+
+<tr>
+<td>{{ attend.name }}</td>
+<td>{{ attend.email }}</td>
+<td>{{ attend.num_attendees }}</td>
+</tr>	
+
+{% endfor %}
+{% else %}
+<h2>No registrations found</h2>
+{% endif %}
+
+</table>
+
+<p>
+Total: {{ total_attendance }}
+</p>
+{% endif %}
+
+{% endblock %}
+

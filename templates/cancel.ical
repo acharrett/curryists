@@ -1,0 +1,36 @@
+BEGIN:VCALENDAR
+METHOD:REQUEST
+PRODID:-//Curryists//CurryBot 2.0//EN
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:{{ curryconfig.timezone }}
+BEGIN:STANDARD
+DTSTART:19701025T020000
+TZOFFSETFROM:+0000
+TZOFFSETTO:+0100
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=-1SU;BYMONTH=10
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:19700329T010000
+TZOFFSETFROM:+0000
+TZOFFSETTO:+0100
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=-1SU;BYMONTH=3
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+ORGANIZER;CN={{ curryconfig.email_from_name }}:MAILTO:{{ curryconfig.email_from_address }}
+ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=FALSE;CN={{ attendance.email }}:MAILTO:{{ attendance.email }}
+DESCRIPTION;LANGUAGE=en-US:You have declined this event
+SUMMARY:Cancelled: {{ attendance.event.name }}
+DTSTART;TZID={{ curryconfig.timezone }}:{{ eventtime_vcal }}
+DTEND;TZID={{ curryconfig.timezone }}:{{ endtime_vcal }}
+UID:att-{{ attendance.id }}@{{ curryconfig.calendar_id_domain }}
+CLASS:PUBLIC
+PRIORITY:5
+DTSTAMP:{{ now_tz_stamp }}
+TRANSP:OPAQUE
+STATUS:CANCELLED
+SEQUENCE:1
+LOCATION;LANGUAGE=en-US:{{ attendance.event.location.name }}\, {{ attendance.event.location.address }}\, {{ attendance.event.location.city.name }}\, {{ attendance.event.location.postcode }}
+END:VEVENT
+END:VCALENDAR

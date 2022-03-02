@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+
+{% include 'event_header.html' %}
+<hr>
+{% if past %}
+<p>Registration is closed as this event is in the past</p>
+{% elif event.max_attendance > 0 and total_attendance >= event.max_attendance %}
+<p>This event has reached maximum attendance</p>
+{% else %}
+{% if event.max_attendance > 0 %}
+Currently signed up: {{ total_attendance }}
+{% endif %}
+<form action="" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Register" />
+</form>
+{% endif %}
+
+{% endblock %}

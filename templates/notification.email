@@ -1,0 +1,22 @@
+Hi,
+
+You're subscribed to a list of curry lovers.
+
+We hope this is because you love curry.
+
+We're just letting you know that another fun curry event is coming up.
+
+To help us plan and book the curry house, please let us know if you'd like to attend by going here:
+
+{{ curryconfig.attend_base_url }}{{ event.id }}
+
+Event: {{ event.name }}
+Date: {{ event.time | date:'H:i D j M Y' }}
+Location: {{ event.location.name }}
+Map: {{ event.location.maplink }}
+Menu: {{ event.location.menulink }}
+
+{{ event.description }}
+
+Thanks,
+{{ curryconfig.email_from_name }}

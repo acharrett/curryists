@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+
+{% if request.user.is_authenticated %}
+
+<h1>Show me the old curries</h1>
+
+{% if object_list %}
+<table border="1">
+
+<tr class="header">
+<td><b>Event Name</b></td>
+<td><b>Location</b></td>
+<td><b>City</b></td>
+<td><b>Time</b></td>
+<!-- <td>&nbsp;</td> -->
+</tr>
+
+{% for event in object_list %}
+
+<tr>
+<td><a href="{% url 'viewhistoric' event.id %}">{{ event.name }}</a></td>
+<td>{{ event.location.name }}</td>
+<td>{{ event.location.city.name }}</td>
+<td>{{ event.time|date:"f a l j M Y" }}</td>
+<!-- <td><a href="{% url 'viewhistoric' event.id %}">view</a></td> -->
+</tr>	
+
+{% endfor %}
+</table>
+
+{% else %}
+<h2>No historic curries to view.</h2>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

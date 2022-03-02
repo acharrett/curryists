@@ -1,0 +1,9 @@
+<h1>{{ event.name }}</h1>
+<h2>{{ event.location.name }}
+ at {{ event.time|date:"f a l j M Y" }}</h2>
+<p>{{ event.description }}</p>
+{% if event.max_attendance > 0 %}
+<p>This event is limited to {{ event.max_attendance }} people.</p>
+{% endif %}
+<p>{{ event.location.address }}, {{ event.location.city.name }}, {{ event.location.postcode }}</p>
+<p><a href="{{ event.location.maplink }}" target="_blank">map</a> <a href="{{ event.location.menulink }}" target="_blank">menu</a>
