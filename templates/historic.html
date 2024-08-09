@@ -35,5 +35,31 @@ Total: {{ total_attendance }}
 </p>
 {% endif %}
 
+<hr>
+
+{% if cancel_list %}
+<h3>Cancellations</h3>
+<table border="1">
+
+<tr class="header">
+<td><b>Name</b></td>
+<td><b>Email</b></td>
+<td><b>Number Attending</b></td>
+</tr>
+
+{% for cancel in cancel_list %}
+
+<tr>
+<td>{{ cancel.name }}</td>
+<td>{{ cancel.email }}</td>
+<td>{{ cancel.num_attendees }}</td>
+</tr>	
+
+{% endfor %}
+</table>
+{% else %}
+<h3>No cancellations</h3>
+{% endif %}
+
 {% endblock %}
 
