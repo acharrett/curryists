@@ -1,17 +1,13 @@
 """ Curryists booking views """
 import datetime
 import pytz
-#from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.shortcuts import render, get_object_or_404
-#from django.http import HttpResponseRedirect, HttpResponse
 from django.http import HttpResponseRedirect
-#from django.views.generic import ListView,DetailView
-#from django.views.generic.edit import FormView
 from django.core.mail import EmailMessage, EmailMultiAlternatives
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
-#from booking.models import City,Location,Event,Attendance
+from django.db import IntegrityError
 from booking.models import Event,Attendance
 from booking.forms import AttendForm,FindmeForm
 from booking.conf import CurryConfig
@@ -52,9 +48,13 @@ def attend_new(request,eventid):
         form = AttendForm(request.POST)
 
         if form.is_valid():
-            attendance = form.save(commit=False)
-            attendance.event = this_event
-            attendance.save()
+            try:
+                attendance = form.save(commit=False)
+                attendance.event = this_event
+                attendance.save()
+            except IntegrityError as e:
+                message = "Duplicate attendance"
+                return render(request,'message.html', { 'message': message, 'request': request, })
 
             eventtime = EventTime(attendance.event.time,CurryConfig.timezone)
 
@@ -131,6 +131,8 @@ def findme(request):
                 event__time__gte=timenow
             ).filter(
                 email=request.POST['email']
+            ).filter(
+                cancelled=0
             )
             to_return = render(
                              request,
@@ -155,7 +157,9 @@ def cancelme(request,attendid,email):
 
     if str.lower(str(attend.email)) == str.lower(str(email)):
         generate_cancellation(attend)
-        attend.delete()
+        #attend.delete()
+        attend.cancelled=1
+        attend.save()
         message = "Registration cancelled"
     else:
         message = "Invalid parameters"
@@ -167,14 +171,17 @@ def nuke(request,attendid):
     """ admin remove a registration """
     attend = get_object_or_404(Attendance, pk=attendid)
     event_id = attend.event.id
-    attend.delete()
+    #attend.delete()
+    attend.cancelled=1
+    attend.save()
     return HttpResponseRedirect('/curry/event/%d'%event_id)
 
 @login_required(login_url='/admin/login/')
 def viewevent(request,eventid):
     """ view an event """
     event = get_object_or_404(Event,pk=eventid)
-    attend_list = Attendance.objects.filter(event=eventid)
+    attend_list = Attendance.objects.filter(event=eventid,cancelled=0)
+    cancel_list = Attendance.objects.filter(event=eventid,cancelled=1)
     total_attendance=0
 
     for attend in attend_list:
@@ -186,6 +193,7 @@ def viewevent(request,eventid):
                      {
                          'event' : event,
                          'attend_list': attend_list,
+                         'cancel_list': cancel_list,
                          'total_attendance': total_attendance,
                          'request': request,
                      }
@@ -196,7 +204,8 @@ def viewevent(request,eventid):
 def viewhistoric(request,eventid):
     """ view a event that has passed """
     event = get_object_or_404(Event,pk=eventid)
-    attend_list = Attendance.objects.filter(event=eventid)
+    attend_list = Attendance.objects.filter(event=eventid,cancelled=0)
+    cancel_list = Attendance.objects.filter(event=eventid,cancelled=1)
     total_attendance=0
 
     for attend in attend_list:
@@ -208,6 +217,7 @@ def viewhistoric(request,eventid):
                      {
                          'event' : event,
                          'attend_list': attend_list,
+                         'cancel_list': cancel_list,
                          'total_attendance': total_attendance,
                          'request': request,
                      }
