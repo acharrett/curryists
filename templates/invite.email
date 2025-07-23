@@ -1,6 +1,6 @@
 Hi,
 
-Thanks for saying you'll come and join us for the {{ event.name }}.
+{{ first_line }}
 
 Date: {{ event.time | date:'H:i D j M Y' }}
 Location: {{ event.location.name }}, {{ event.location.address }}, {{ event.location.city.name }}, {{ event.location.postcode }}

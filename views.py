@@ -57,7 +57,9 @@ def attend_new(request,eventid):
                 return render(request,'message.html', { 'message': message, 'request': request, })
 
             eventtime = EventTime(attendance.event.time,CurryConfig.timezone)
-
+            first_line = "Thanks for saying you will come and join us for the "
+            first_line += this_event.name
+            first_line += "."
 
             message = render_to_string(
                                           'invite.email',
@@ -65,6 +67,7 @@ def attend_new(request,eventid):
                                               'event': this_event,
                                               'curryconfig': CurryConfig,
                                               'eventtime': eventtime,
+                                              'first_line': first_line,
                                           }
                                       )
 
@@ -119,7 +122,6 @@ def attend_new(request,eventid):
 
     return to_return
 
-
 def findme(request):
     """ look up someone's existing registrations """
     if request.method == "POST":
@@ -171,7 +173,6 @@ def nuke(request,attendid):
     """ admin remove a registration """
     attend = get_object_or_404(Attendance, pk=attendid)
     event_id = attend.event.id
-    #attend.delete()
     attend.cancelled=1
     attend.save()
     return HttpResponseRedirect('/curry/event/%d'%event_id)
@@ -198,6 +199,56 @@ def viewevent(request,eventid):
                          'request': request,
                      }
                  )
+
+@login_required(login_url='/admin/login/')
+def send_event_update(request,eventid):
+    """ send an email/calendar event update to all people subscribed to an event """
+    event = get_object_or_404(Event, pk=eventid)
+    attend_list = Attendance.objects.filter(event=eventid,cancelled=0)
+    now_tz=datetime_now()
+
+    if ((event.last_email_sent is not None) and
+        (event.last_email_sent > (now_tz - datetime.timedelta(hours=2)))):
+        message = "Error: the last email notification sent for this event was less than 2 hours ago"
+        return render(request,'message.html', { 'message': message, 'request': request, })
+
+    for attendance in attend_list:
+
+            eventtime = EventTime(attendance.event.time,CurryConfig.timezone)
+            first_line = "This is a notification that the event you signed up to has changed. Here are the updated details."
+
+            message = render_to_string(
+                                          'invite.email',
+                                          {
+                                              'event': event,
+                                              'curryconfig': CurryConfig,
+                                              'eventtime': eventtime,
+                                              'first_line': first_line,
+                                          }
+                                      )
+
+            invite = generate_invite(
+                                        attendance,
+                                        event,
+                                        message,
+                                        eventtime,
+                                    )
+
+            email = EmailMultiAlternatives('Updated invitation: ' + event.name,
+                message,
+                CurryConfig.email_from_name +' <' + CurryConfig.email_from_address + '>',
+                [ attendance.email ],
+                headers={ 'Sender': CurryConfig.email_from_address },
+            )
+
+            email.attach_alternative(invite,"text/calendar; method=REQUEST")
+
+            email.send()
+
+    event.last_email_sent = now_tz
+    event.save()
+
+    return HttpResponseRedirect('/curry/event/%d'%event.id)
 
 
 @login_required(login_url='/admin/login/')
@@ -254,6 +305,7 @@ def notify(request,eventid):
 
         if event.notified is False:
             event.notified=True
+            event.last_email_sent = now_tz
             event.save()
 
     return HttpResponseRedirect(reverse('eventlist'))

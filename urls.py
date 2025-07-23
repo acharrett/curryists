@@ -12,5 +12,6 @@ urlpatterns = [
 	url(r'^notify/(\d+)', views.notify, name='notify'),
 	url(r'^viewhistoric/(\d+)', views.viewhistoric, name='viewhistoric'),
 	url(r'^historic/', views.historic_list, name='historiclist'),
+	url(r'^sendupdate/(\d+)', views.send_event_update, name='sendupdate'),
 ]
 

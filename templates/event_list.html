@@ -20,6 +20,7 @@
 {% if request.user.is_authenticated %}
 <div class="button"><a href="{% url 'viewevent' event.id %}">admin</a></div>
 <div class="button"><a href="{% url 'notify' event.id %}">notify</a> [notified {{ event.notified }}]</div>
+<div class="button"><a href="{% url 'sendupdate' event.id %}">send calendar update</a></div>
 {% endif %}
 </div>
 </div>
